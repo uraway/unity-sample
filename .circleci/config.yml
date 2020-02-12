@@ -18,8 +18,8 @@ jobs:
             $UNITY_EXECUTABLE -projectPath $(pwd) \
                               -runTests
                               -testPlatform << parameters.test-platform >>
-                              -testResults << parameters.test-platform >>-results.xml \
-                              -logFile /dev/stdout \
+                              -testResults $(pwd)<< parameters.test-platform >>-results.xml \
+                              -logFile \
                               -batchmode
       - store_artifacts:
             path: << parameters.test-platform >>-results.xml
