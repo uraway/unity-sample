@@ -17,7 +17,12 @@ jobs:
           command: |
             echo "$UNITY_LICENSE_CONTENT" | base64 --decode | tr -d '\r' > yourulffile.ulf
       - run:
-          name: Activation
+          name: |
+            Activation
+            logFile: ログ
+            batchmode: バッチモード。コマンドラインで完結するようにポップアップを表示しないオプション
+            nographics: GPUのないマシンで実行
+            manualLicenseFile: ライセンスファイル(.ulf)
           command: |
             /opt/Unity/Editor/Unity -logFile \
                                     -batchmode \
@@ -25,15 +30,17 @@ jobs:
                                     -quit \
                                     -manualLicenseFile yourulffile.ulf || exit 0
       - run:
-          name: << parameters.test-platform >> Test
+          name: |
+            << parameters.test-platform >> Test
+            runTests: テスト実行
+            testPlatform: テストプラットフォーム
           command: |
             /opt/Unity/Editor/Unity -projectPath $(pwd) \
                                     -runTests \
                                     -testPlatform << parameters.test-platform >> \
                                     -testResults $(pwd)/<< parameters.test-platform >>-results.xml \
                                     -logFile \
-                                    -batchmode \
-                                    -nographics
+                                    -batchmode
       - store_artifacts:
             path: << parameters.test-platform >>-results.xml
 
