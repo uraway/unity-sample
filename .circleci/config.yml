@@ -11,6 +11,7 @@ jobs:
     environment:
       UNITY_EXECUTABLE: /opt/Unity/Editor/Unity
     steps:
+      - checkout
       - run:
           name: << parameters.test-platform >> Test
           command: |
