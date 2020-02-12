@@ -16,8 +16,8 @@ jobs:
           name: << parameters.test-platform >> Test
           command: |
             /opt/Unity/Editor/Unity -projectPath $(pwd) \
-                                    -runTests
-                                    -testPlatform << parameters.test-platform >>
+                                    -runTests \
+                                    -testPlatform << parameters.test-platform >> \
                                     -testResults $(pwd)/<< parameters.test-platform >>-results.xml \
                                     -logFile \
                                     -batchmode
