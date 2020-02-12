@@ -17,6 +17,13 @@ jobs:
           command: |
             echo $UNITY_LICENSE_CONTENT | base64 --decode | tr -d '\r' > yourulffile.ulf
       - run:
+          name: Activation
+          command: |
+            /opt/Unity/Editor/Unity -logFile \
+                                    -batchmode \
+                                    -nographics \
+                                    -manualLicenseFile yourulffile.ulf || exit 0
+      - run:
           name: << parameters.test-platform >> Test
           command: |
             /opt/Unity/Editor/Unity -projectPath $(pwd) \
@@ -24,9 +31,7 @@ jobs:
                                     -testPlatform << parameters.test-platform >> \
                                     -testResults $(pwd)/<< parameters.test-platform >>-results.xml \
                                     -logFile \
-                                    -batchmode \
-                                    -nographics \
-                                    -manualLicenseFile yourulffile.ulf
+                                    -batchmode
       - store_artifacts:
             path: << parameters.test-platform >>-results.xml
 
