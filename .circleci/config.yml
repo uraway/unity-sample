@@ -13,6 +13,10 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Decode License content
+          command: |
+            echo $UNITY_LICENSE_CONTENT | base64 --decode > yourulffile
+      - run:
           name: << parameters.test-platform >> Test
           command: |
             /opt/Unity/Editor/Unity -projectPath $(pwd) \
@@ -21,7 +25,7 @@ jobs:
                                     -testResults $(pwd)/<< parameters.test-platform >>-results.xml \
                                     -logFile \
                                     -batchmode \
-                                    -manualLicenseFile $UNITY_LICENSE_CONTENT
+                                    -manualLicenseFile yourulffile
       - store_artifacts:
             path: << parameters.test-platform >>-results.xml
 
