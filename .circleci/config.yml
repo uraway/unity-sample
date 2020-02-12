@@ -15,7 +15,7 @@ jobs:
       - run:
           name: Decode License content
           command: |
-            echo $UNITY_LICENSE_CONTENT | base64 --decode > yourulffile
+            echo $UNITY_LICENSE_CONTENT | base64 --decode > yourulffile.ulf
       - run:
           name: << parameters.test-platform >> Test
           command: |
@@ -25,7 +25,8 @@ jobs:
                                     -testResults $(pwd)/<< parameters.test-platform >>-results.xml \
                                     -logFile \
                                     -batchmode \
-                                    -manualLicenseFile yourulffile
+                                    -nographics \
+                                    -manualLicenseFile yourulffile.ulf
       - store_artifacts:
             path: << parameters.test-platform >>-results.xml
 
