@@ -20,7 +20,8 @@ jobs:
                                     -testPlatform << parameters.test-platform >> \
                                     -testResults $(pwd)/<< parameters.test-platform >>-results.xml \
                                     -logFile \
-                                    -batchmode
+                                    -batchmode \
+                                    -manualLicenseFile $UNITY_LICENSE_CONTENT
       - store_artifacts:
             path: << parameters.test-platform >>-results.xml
 
