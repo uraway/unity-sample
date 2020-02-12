@@ -35,7 +35,8 @@ jobs:
             runTests: テスト実行
             testPlatform: テストプラットフォーム
           command: |
-            -xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' /opt/Unity/Editor/Unity -projectPath $(pwd) \
+            xvfb-run --auto-servernum --server-args='-screen 0 640x480x24'
+            /opt/Unity/Editor/Unity -projectPath $(pwd) \
                                     -runTests \
                                     -testPlatform << parameters.test-platform >> \
                                     -testResults $(pwd)/<< parameters.test-platform >>-results.xml \
