@@ -1,0 +1,30 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: gableroux/unity3d:2018.4.16f1
+    environment:
+      UNITY_EXECUTABLE: /opt/Unity/Editor/Unity
+    steps:
+      - run:
+          name: editmode Test
+          environment:
+            TEST_PLATFORM: editmode
+          command: |
+            $UNITY_EXECUTABLE -projectPath $(pwd) \
+                              -runTests
+                              -testPlatform $TEST_PLATFORM
+      - run:
+          name: playmode Test
+          environment:
+            TEST_PLATFORM: playmode
+          command: |
+            $UNITY_EXECUTABLE -projectPath $(pwd) \
+                              -runTests
+                              -testPlatform $TEST_PLATFORM
+
+workflows:
+  test-build:
+    jobs:
+      - test
