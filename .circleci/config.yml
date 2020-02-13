@@ -1,15 +1,46 @@
 version: 2.1
 
+parameters:
+  run-triggered-workflow:
+    type: boolean
+    default: false
+  unity-version:
+    type: string
+    default: "latest"
+  unity-executable:
+    type: string
+    default: "/opt/Unity/Editor/Unity"
+
+executors:
+  default:
+    docker:
+      - image: gableroux/unity3d:<< pipeline.parameters.unity-version >>
+
 jobs:
+  trigger-workflow:
+    machine:
+      image: 'ubuntu-1604:201903-01'
+    parameters:
+      unity-version:
+        type: string
+        default: "latest"
+    steps:
+      - run:
+          name: Trigger test-build workflow
+          command: |
+            curl -u ${CIRCLE_TOKEN}: -X POST --header
+            "Content-Type: application/json" -d "{
+              \"branch\": \"${CIRCLE_BRANCH}\",
+              \"parameters\": {\"run-triggered-workflow\": true, \"unity-version\":\"<< parameters.unity-version >>\"}
+            }"
+            "https://circleci.com/api/v2/project/${VCS_TYPE}/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pipeline"
+
   test:
     parameters:
       test-platform:
         type: enum
         enum: ['playmode', 'editmode']
-    docker:
-      - image: gableroux/unity3d:2018.4.16f1
-    environment:
-      UNITY_EXECUTABLE: /opt/Unity/Editor/Unity
+    executor: default
     steps:
       - checkout
       - run:
@@ -19,34 +50,61 @@ jobs:
       - run:
           name: |
             Activation
-            logFile: ログ
-            batchmode: バッチモード。コマンドラインで完結するようにポップアップを表示しないオプション
-            nographics: GPUのないマシンで実行
-            manualLicenseFile: ライセンスファイル(.ulf)
+# logFile: ログ
+# batchmode: バッチモード。コマンドラインで完結するようにポップアップを表示しないオプション
+# nographics: GPUのないマシンで実行
+# manualLicenseFile: ライセンスファイル(.ulf)
           command: |
-            /opt/Unity/Editor/Unity -logFile \
-                                    -batchmode \
-                                    -nographics \
-                                    -quit \
-                                    -manualLicenseFile yourulffile.ulf || exit 0
+            << pipeline.parameters.unity-executable >> -logFile \
+                                                       -batchmode \
+                                                       -nographics \
+                                                       -quit \
+                                                       -manualLicenseFile yourulffile.ulf || exit 0
       - run:
           name: |
             << parameters.test-platform >> Test
-            runTests: テスト実行
-            testPlatform: テストプラットフォーム
+# runTests: テスト実行
+# testPlatform: テストプラットフォーム
           command: |
             xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
-            /opt/Unity/Editor/Unity -projectPath $(pwd) \
-                                    -runTests \
-                                    -testPlatform << parameters.test-platform >> \
-                                    -testResults $(pwd)/<< parameters.test-platform >>-results.xml \
-                                    -logFile \
-                                    -batchmode
+            << pipeline.parameters.unity-executable >> -projectPath $(pwd) \
+                                                       -runTests \
+                                                       -testPlatform << parameters.test-platform >> \
+                                                       -testResults $(pwd)/<< parameters.test-platform >>-results.xml \
+                                                       -logFile \
+                                                       -batchmode
       - store_artifacts:
             path: << parameters.test-platform >>-results.xml
 
+  build:
+    executor: default
+    parameters:
+      build-target:
+        type: string
+    steps:
+      - run:
+          name: Build for << parameters.build-target >>
+          command: |
+            << pipeline.parameters.unity-executable >> -projectPath $(pwd) \
+                                                       -quit \
+                                                       -batchmode \
+                                                       -buildTarget << parameters.build-target >>
+                                                       -logFile
+      - store_artifacts:
+          path: ./Builds
+
 workflows:
+  trigger-workflow:
+    unless: << pipeline.parameters.run-triggered-workflow >>
+    jobs:
+      - trigger-workflow:
+          name: UnityHub LTS release
+          unity-version: 2018.4.16f1
+      - trigger-workflow:
+          name: UnityHub Latest release
+          unity-version: 2019.3.1f1
   test-build:
+    when: << pipeline.parameters.run-triggered-workflow >>
     jobs:
       - test:
           name: test-editmode
@@ -54,3 +112,18 @@ workflows:
       - test:
           name: test-playmode
           test-platform: playmode
+      - build:
+          build-target: StandaloneLinux64
+          requires:
+            - test-editmode
+            - test-playmode
+      - build:
+          build-target: StandaloneOSX
+          requires:
+            - test-editmode
+            - test-playmode
+      - build:
+          build-target: StandaloneWindows64
+          requires:
+            - test-editmode
+            - test-playmode
