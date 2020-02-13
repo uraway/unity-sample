@@ -71,7 +71,7 @@ jobs:
                                                        -runTests \
                                                        -testPlatform << parameters.test-platform >> \
                                                        -testResults $(pwd)/<< parameters.test-platform >>-results.xml \
-                                                       -logFile \
+                                                       -logFile /dev/stdout \
                                                        -batchmode
       - store_artifacts:
             path: << parameters.test-platform >>-results.xml
@@ -87,10 +87,9 @@ jobs:
           command: |
             xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
             << pipeline.parameters.unity-executable >> -projectPath $(pwd) \
-                                                       -quit \
                                                        -batchmode \
                                                        -buildTarget << parameters.build-target >>
-                                                       -logFile
+                                                       -logFile /dev/stdout
       - store_artifacts:
           path: ./Builds
 
