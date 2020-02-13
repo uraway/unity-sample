@@ -59,6 +59,7 @@ jobs:
                                                        -batchmode \
                                                        -nographics \
                                                        -quit \
+                                                       -logFile /dev/stdout \
                                                        -manualLicenseFile yourulffile.ulf || exit 0
       - run:
           name: |
@@ -88,7 +89,7 @@ jobs:
             xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
             << pipeline.parameters.unity-executable >> -projectPath $(pwd) \
                                                        -batchmode \
-                                                       -buildTarget << parameters.build-target >>
+                                                       -buildTarget << parameters.build-target >> \
                                                        -logFile /dev/stdout
       - store_artifacts:
           path: ./Builds
@@ -100,9 +101,9 @@ workflows:
       - trigger-workflow:
           name: UnityHub LTS release
           unity-version: 2018.4.16f1
-      - trigger-workflow:
-          name: UnityHub Latest release
-          unity-version: 2019.3.0f6
+      # - trigger-workflow:
+      #     name: UnityHub Latest release
+      #     unity-version: 2019.3.0f6
   test-build:
     when: << pipeline.parameters.run-triggered-workflow >>
     jobs:
