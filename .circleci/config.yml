@@ -85,6 +85,7 @@ jobs:
       - run:
           name: Build for << parameters.build-target >>
           command: |
+            xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
             << pipeline.parameters.unity-executable >> -projectPath $(pwd) \
                                                        -quit \
                                                        -batchmode \
@@ -102,7 +103,7 @@ workflows:
           unity-version: 2018.4.16f1
       - trigger-workflow:
           name: UnityHub Latest release
-          unity-version: 2019.3.1f1
+          unity-version: 2019.3.0f6
   test-build:
     when: << pipeline.parameters.run-triggered-workflow >>
     jobs:
@@ -113,16 +114,19 @@ workflows:
           name: test-playmode
           test-platform: playmode
       - build:
+          name: StandaloneLinux64
           build-target: StandaloneLinux64
           requires:
             - test-editmode
             - test-playmode
       - build:
+          name: StandaloneOSX
           build-target: StandaloneOSX
           requires:
             - test-editmode
             - test-playmode
       - build:
+          name: StandaloneWindows64
           build-target: StandaloneWindows64
           requires:
             - test-editmode
