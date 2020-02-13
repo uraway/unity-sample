@@ -16,6 +16,28 @@ executors:
     docker:
       - image: gableroux/unity3d:<< pipeline.parameters.unity-version >>
 
+commands:
+  activate:
+    steps:
+      - run:
+          name: Decode License content
+          command: |
+            echo "$UNITY_LICENSE_CONTENT" | base64 --decode | tr -d '\r' > yourulffile.ulf
+      - run:
+          name: |
+            Activation
+# logFile: ログ
+# batchmode: バッチモード。コマンドラインで完結するようにポップアップを表示しないオプション
+# nographics: GPUのないマシンで実行
+# manualLicenseFile: ライセンスファイル(.ulf)
+          command: |
+            << pipeline.parameters.unity-executable >> -logFile \
+                                                       -batchmode \
+                                                       -nographics \
+                                                       -quit \
+                                                       -logFile /dev/stdout \
+                                                       -manualLicenseFile yourulffile.ulf || exit 0
+
 jobs:
   trigger-workflow:
     machine:
@@ -43,24 +65,7 @@ jobs:
     executor: default
     steps:
       - checkout
-      - run:
-          name: Decode License content
-          command: |
-            echo "$UNITY_LICENSE_CONTENT" | base64 --decode | tr -d '\r' > yourulffile.ulf
-      - run:
-          name: |
-            Activation
-# logFile: ログ
-# batchmode: バッチモード。コマンドラインで完結するようにポップアップを表示しないオプション
-# nographics: GPUのないマシンで実行
-# manualLicenseFile: ライセンスファイル(.ulf)
-          command: |
-            << pipeline.parameters.unity-executable >> -logFile \
-                                                       -batchmode \
-                                                       -nographics \
-                                                       -quit \
-                                                       -logFile /dev/stdout \
-                                                       -manualLicenseFile yourulffile.ulf || exit 0
+      - activate
       - run:
           name: |
             << parameters.test-platform >> Test
@@ -83,6 +88,8 @@ jobs:
       build-target:
         type: string
     steps:
+      - checkout
+      - activate
       - run:
           name: Build for << parameters.build-target >>
           command: |
