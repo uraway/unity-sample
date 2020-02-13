@@ -28,6 +28,8 @@ jobs:
       - run:
           name: Trigger test-build workflow
           command: |
+            VCS_TYPE=$(echo ${CIRCLE_BUILD_URL} | cut -d '/' -f 4)
+
             curl -u ${CIRCLE_TOKEN}: -X POST --header "Content-Type: application/json" -d "{
               \"branch\": \"${CIRCLE_BRANCH}\",
               \"parameters\": {\"run-triggered-workflow\": true, \"unity-version\":\"<< parameters.unity-version >>\"}
