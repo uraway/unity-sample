@@ -28,8 +28,7 @@ jobs:
       - run:
           name: Trigger test-build workflow
           command: |
-            curl -u ${CIRCLE_TOKEN}: -X POST --header
-            "Content-Type: application/json" -d "{
+            curl -u ${CIRCLE_TOKEN}: -X POST --header "Content-Type: application/json" -d "{
               \"branch\": \"${CIRCLE_BRANCH}\",
               \"parameters\": {\"run-triggered-workflow\": true, \"unity-version\":\"<< parameters.unity-version >>\"}
             }"
