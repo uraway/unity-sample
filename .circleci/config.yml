@@ -1,18 +1,10 @@
 version: 2.1
 
-parameters:
-  run-triggered-workflow:
-    type: boolean
-    default: false
-  unity-version:
-    type: string
-    default: "latest"
-  unity-executable:
-    type: string
-    default: "/opt/Unity/Editor/Unity"
-
 executors:
   default:
+    unity-version:
+      type: string
+      default: 2018.4.16f1-android
     docker:
       - image: gableroux/unity3d:<< pipeline.parameters.unity-version >>
 
@@ -31,12 +23,12 @@ commands:
 # nographics: GPUのないマシンで実行
 # manualLicenseFile: ライセンスファイル(.ulf)
           command: |
-            << pipeline.parameters.unity-executable >> -logFile \
-                                                       -batchmode \
-                                                       -nographics \
-                                                       -quit \
-                                                       -logFile /dev/stdout \
-                                                       -manualLicenseFile yourulffile.ulf || exit 0
+            /opt/Unity/Editor/Unity -logFile \
+                                    -batchmode \
+                                    -nographics \
+                                    -quit \
+                                    -logFile /dev/stdout \
+                                    -manualLicenseFile yourulffile.ulf || exit 0
 
 jobs:
   trigger-workflow:
@@ -73,12 +65,12 @@ jobs:
 # testPlatform: テストプラットフォーム
           command: |
             xvfb-run -a \
-            << pipeline.parameters.unity-executable >> -projectPath $(pwd) \
-                                                       -runTests \
-                                                       -testPlatform << parameters.test-platform >> \
-                                                       -testResults $(pwd)/<< parameters.test-platform >>-results.xml \
-                                                       -logFile /dev/stdout \
-                                                       -batchmode
+            /opt/Unity/Editor/Unity -projectPath $(pwd) \
+                                    -runTests \
+                                    -testPlatform << parameters.test-platform >> \
+                                    -testResults $(pwd)/<< parameters.test-platform >>-results.xml \
+                                    -logFile /dev/stdout \
+                                    -batchmode
       - store_artifacts:
             path: << parameters.test-platform >>-results.xml
 
@@ -94,24 +86,24 @@ jobs:
           name: Build for << parameters.build-target >>
           command: |
             xvfb-run -a \
-            << pipeline.parameters.unity-executable >> -projectPath $(pwd) \
-                                                       -batchmode \
-                                                       -nographics \
-                                                       -buildTarget << parameters.build-target >> \
-                                                       -logFile /dev/stdout
+            /opt/Unity/Editor/Unity -projectPath $(pwd) \
+                                    -batchmode \
+                                    -nographics \
+                                    -buildTarget << parameters.build-target >> \
+                                    -logFile /dev/stdout
       - store_artifacts:
           path: ./Builds
 
 workflows:
-  # trigger-workflow:
-  #   unless: << pipeline.parameters.run-triggered-workflow >>
-  #   jobs:
-  #     - trigger-workflow:
-  #         name: UnityHub LTS release
-  #         unity-version: 2018.4.16f1
-  #     - trigger-workflow:
-  #         name: UnityHub Latest release
-  #         unity-version: 2019.3.0f6
+  #trigger-workflow:
+  #  unless: << pipeline.parameters.run-triggered-workflow >>
+  #  jobs:
+  #    - trigger-workflow:
+  #        name: UnityHub LTS release
+  #        unity-version: 2018.4.16f1
+  #    # - trigger-workflow:
+  #    #     name: UnityHub Latest release
+  #    #     unity-version: 2019.3.0f6
   test-build:
     # when: << pipeline.parameters.run-triggered-workflow >>
     jobs:
