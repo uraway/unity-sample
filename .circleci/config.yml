@@ -5,7 +5,7 @@ executors:
     parameters:
       unity-version:
         type: string
-        default: 2019.2.11f1
+        default: 2019.3.1f1-update-2020-02-17
     docker:
       - image: gableroux/unity3d:<< parameters.unity-version >>
 
