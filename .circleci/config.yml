@@ -5,7 +5,7 @@ executors:
     parameters:
       unity-version:
         type: string
-        default: 2018.4.16f1-android
+        default: 2019.2.11f1
     docker:
       - image: gableroux/unity3d:<< parameters.unity-version >>
 
