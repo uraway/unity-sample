@@ -2,11 +2,12 @@ version: 2.1
 
 executors:
   default:
-    unity-version:
-      type: string
-      default: 2018.4.16f1-android
+    parameters:
+      unity-version:
+        type: string
+        default: 2018.4.16f1-android
     docker:
-      - image: gableroux/unity3d:<< pipeline.parameters.unity-version >>
+      - image: gableroux/unity3d:<< parameters.unity-version >>
 
 commands:
   activate:
