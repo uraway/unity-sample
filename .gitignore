@@ -60,3 +60,10 @@ sysinfo.txt
 
 # Crashlytics generated file
 crashlytics-build.properties
+
+# Activation file
+unity3d.alf
+
+# License file
+Unity_v2018.x.ulf
+Unity_v2019.x.ulf
