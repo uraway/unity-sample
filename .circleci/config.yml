@@ -103,17 +103,17 @@ jobs:
           path: ./Builds
 
 workflows:
-  trigger-workflow:
-    unless: << pipeline.parameters.run-triggered-workflow >>
-    jobs:
-      - trigger-workflow:
-          name: UnityHub LTS release
-          unity-version: 2018.4.16f1
-      # - trigger-workflow:
-      #     name: UnityHub Latest release
-      #     unity-version: 2019.3.0f6
+  # trigger-workflow:
+  #   unless: << pipeline.parameters.run-triggered-workflow >>
+  #   jobs:
+  #     - trigger-workflow:
+  #         name: UnityHub LTS release
+  #         unity-version: 2018.4.16f1
+  #     - trigger-workflow:
+  #         name: UnityHub Latest release
+  #         unity-version: 2019.3.0f6
   test-build:
-    when: << pipeline.parameters.run-triggered-workflow >>
+    # when: << pipeline.parameters.run-triggered-workflow >>
     jobs:
       - test:
           name: test-editmode
