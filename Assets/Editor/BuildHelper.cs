@@ -12,7 +12,7 @@ public static class BuildHelper
 
   public static void StandaloneLinux64()
   {
-    BuildPipeline.BuildPlayer(GetScenes(), getLocationPath(), BuildTarget.StandaloneLinuxUniversal, BuildOptions.None);
+    BuildPipeline.BuildPlayer(GetScenes(), getLocationPath(), BuildTarget.StandaloneLinux64, BuildOptions.None);
   }
 
   public static void StandaloneOSX()
