@@ -83,7 +83,9 @@ jobs:
       - run:
           name: tarでまとめる
           command: |
-            cd Builds && tar --create --gzip --verbose --file UnitySample.tar.gz --exclude=./*.gz .
+            cd Builds
+            touch UnitySample.tar.gz
+            tar --create --gzip --verbose --file UnitySample.tar.gz --exclude=./*.gz .
       - store_artifacts:
           path: Builds/UnitySample.tar.gz
 
