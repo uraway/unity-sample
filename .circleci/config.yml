@@ -1,30 +1,124 @@
 version: 2.1
 
-jobs:
-  test:
+executors:
+  default:
+    parameters:
+      unity-version:
+        type: string
+        default: 2018.4.16f1
+      component:
+        type: string
+        default: ""
     docker:
-      - image: gableroux/unity3d:2018.4.16f1
-    environment:
-      UNITY_EXECUTABLE: /opt/Unity/Editor/Unity
+      - image: gableroux/unity3d:<< parameters.unity-version >><<# parameters.component >>-<< parameters.component >><</ parameters.component >>
+
+commands:
+  activate:
     steps:
       - run:
-          name: editmode Test
-          environment:
-            TEST_PLATFORM: editmode
+          name: ライセンスをデコード
           command: |
-            $UNITY_EXECUTABLE -projectPath $(pwd) \
-                              -runTests
-                              -testPlatform $TEST_PLATFORM
+            echo "$UNITY_LICENSE_CONTENT" | base64 --decode | tr -d '\r' > yourulffile.ulf
       - run:
-          name: playmode Test
-          environment:
-            TEST_PLATFORM: playmode
+          name: |
+            ライセンスのアクティベーション
           command: |
-            $UNITY_EXECUTABLE -projectPath $(pwd) \
-                              -runTests
-                              -testPlatform $TEST_PLATFORM
+            /opt/Unity/Editor/Unity -batchmode \
+                                    -nographics \
+                                    -quit \
+                                    -logFile /dev/stdout \
+                                    -manualLicenseFile yourulffile.ulf > unity.log || true
+            cat unity.log | grep "Next license update check"
+jobs:
+  test:
+    parameters:
+      test-platform:
+        type: enum
+        enum: ['playmode', 'editmode']
+    executor: default
+    steps:
+      - checkout
+      - activate
+      - run:
+          name: |
+            << parameters.test-platform >> Test
+          command: |
+            xvfb-run -a \
+            /opt/Unity/Editor/Unity -projectPath $(pwd) \
+                                    -runTests \
+                                    -testPlatform << parameters.test-platform >> \
+                                    -testResults $(pwd)/<< parameters.test-platform >>-results.xml \
+                                    -batchmode \
+                                    -logFile /dev/stdout \
+                                    -quit
+      - store_artifacts:
+            path: << parameters.test-platform >>-results.xml
+
+  build:
+    parameters:
+      e:
+        type: executor
+      build-target:
+        type: string
+    executor: << parameters.e >>
+    steps:
+      - checkout
+      - activate
+      - run:
+          name: Buildsディレクトリを作成
+          command: mkdir -p Builds
+      - run:
+          name: << parameters.build-target >>用ビルド
+          no_output_timeout: 60m
+          command: |
+            xvfb-run -a \
+            /opt/Unity/Editor/Unity -projectPath $(pwd) \
+                                    -batchmode \
+                                    -nographics \
+                                    -logFile /dev/stdout \
+                                    -buildTarget << parameters.build-target >> \
+                                    -executeMethod BuildHelper.<< parameters.build-target >> \
+                                    -quit
+
+      - run:
+          name: tarでまとめる
+          command: |
+            cd Builds && tar --create --gzip --verbose --file UnitySample.tar.gz ./*
+      - store_artifacts:
+          path: ./Builds
 
 workflows:
   test-build:
     jobs:
-      - test
+      - test:
+          name: test-editmode
+          test-platform: editmode
+      - test:
+          name: test-playmode
+          test-platform: playmode
+      - build:
+          name: Linux
+          build-target: StandaloneLinux64
+          e:
+            name: default
+          requires:
+            - test-editmode
+            - test-playmode
+      - build:
+          name: macOS
+          build-target: StandaloneOSX
+          e:
+            name: default
+            component: mac
+          requires:
+            - test-editmode
+            - test-playmode
+      - build:
+          name: Windows
+          build-target: StandaloneWindows64
+          e:
+            name: default
+            component: windows
+          requires:
+            - test-editmode
+            - test-playmode
